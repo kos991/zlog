@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>zlog — Web 预览</title>
+<style>
+:root {
+  --bg: #1a1d23;
+  --surface: #252830;
+  --border: #3a3f4b;
+  --text: #e4e7eb;
+  --muted: #8b919e;
+  --accent: #4dabf7;
+  --accent-hover: #339af0;
+  --danger: #fa5252;
+  --success: #51cf66;
+  --warning: #fab005;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ===== Preview Nav (tab switcher) ===== */
+.preview-tabs {
+  display: flex;
+  gap: 0;
+  background: #11141a;
+  border-bottom: 2px solid var(--accent);
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.preview-tabs button {
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+.preview-tabs button:hover { color: var(--text); }
+.preview-tabs button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ===== App Navbar ===== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 52px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: none;
+}
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  margin-left: 20px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* ===== Login ===== */
+.login-page {
+  max-width: 360px;
+  margin: 80px auto;
+  background: var(--surface);
+  padding: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.login-page h1 { margin-bottom: 24px; text-align: center; }
+.login-form { display: flex; flex-direction: column; gap: 16px; }
+.login-form label { display: flex; flex-direction: column; gap: 4px; }
+.login-form input {
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+}
+.login-form button {
+  padding: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ===== Query Form ===== */
+.query-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--surface);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.form-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.form-row label { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 160px; }
+input, select {
+  padding: 6px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 13px;
+}
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+.form-actions { display: flex; gap: 12px; }
+button, .btn {
+  padding: 8px 20px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+button:hover, .btn:hover { background: var(--accent-hover); }
+
+/* ===== Tables ===== */
+.query-result { background: var(--surface); border-radius: 8px; overflow: auto; }
+.log-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.log-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  color: var(--muted);
+  font-weight: 600;
+}
+.log-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.log-table tr:hover td { background: rgba(77, 171, 247, 0.05); }
+.placeholder { text-align: center; color: var(--muted); padding: 24px; }
+.pagination { display: flex; gap: 8px; justify-content: center; padding: 16px; }
+.pagination button { padding: 4px 12px; }
+.actions { margin-bottom: 20px; }
+h1 { margin-bottom: 20px; }
+
+/* ===== Pages ===== */
+.tasks-page, .ip-ranges-page, .settings-page {
+  background: var(--surface);
+  padding: 24px;
+  border-radius: 8px;
+}
+.tasks-page form, .ip-ranges-page form, .settings-page form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.settings-page label { display: flex; flex-direction: column; gap: 4px; }
+.admin-section {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== Page visibility ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== Badge styles for mock ===== */
+.badge { padding: 2px 8px; border-radius: 3px; font-size: 12px; }
+.badge-ok { background: rgba(81,207,102,0.15); color: var(--success); }
+.badge-run { background: rgba(77,171,247,0.15); color: var(--accent); }
+.badge-fail { background: rgba(250,82,82,0.15); color: var(--danger); }
+</style>
+</head>
+<body>
+
+<!-- Preview Tab Switcher -->
+<div class="preview-tabs">
+  <button class="active" onclick="showPage('login', this)">登录页</button>
+  <button onclick="showPage('dashboard', this)">查询页</button>
+  <button onclick="showPage('tasks', this)">任务页</button>
+  <button onclick="showPage('ip-ranges', this)">IP 段页</button>
+  <button onclick="showPage('settings', this)">设置页</button>
+</div>
+
+<!-- ===== Login Page ===== -->
+<div id="page-login" class="page active">
+  <div class="login-page">
+    <h1>zlog 登录</h1>
+    <form class="login-form" onsubmit="return false">
+      <label>用户名 <input type="text" value="admin" readonly></label>
+      <label>密码 <input type="password" value="change-me" readonly></label>
+      <button type="button" onclick="showPage('dashboard', document.querySelector('.preview-tabs button:nth-child(2)'))">登录</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===== Dashboard Page ===== -->
+<div id="page-dashboard" class="page">
+  <nav class="navbar">
+    <a href="#" class="brand">zlog</a>
+    <div class="nav-links">
+      <a href="#">查询</a><a href="#">任务</a><a href="#">IP 段</a><a href="#">设置</a><a href="#">退出</a>
+    </div>
+  </nav>
+  <main class="container">
+    <div class="dashboard">
+      <h1>NAT 日志查询</h1>
+      <form class="query-form" onsubmit="return false">
+        <div class="form-row">
+          <label>开始时间 <input type="text" value="2026-04-28"></label>
+          <label>结束时间 <input type="text" value="2026-04-28 23:59:59"></label>
+        </div>
+        <div class="form-row">
+          <label>IP <input type="text" value="140.205.70.178"></label>
+          <label>IP 字段
+            <select><option value="dst" selected>目的 IP</option><option value="src">源 IP</option><option value="tr">转换后 IP</option><option value="any">全部</option></select>
+          </label>
+          <label>设备 IP <input type="text" placeholder="如 10.10.10.1"></label>
+        </div>
+        <div class="form-row">
+          <label>NAT 类型 <select><option value="">全部</option><option value="snat">snat</option><option value="dnat">dnat</option></select></label>
+          <label>协议 <input type="text" placeholder="如 6"></label>
+          <label>文件名片段 <input type="text" placeholder="如 20260428"></label>
+          <label>关键字 <input type="text"></label>
+        </div>
+        <div class="form-actions">
+          <button type="button">查询</button>
+          <button type="button">导出</button>
+        </div>
+      </form>
+      <div class="query-result">
+        <table class="log-table">
+          <thead><tr>
+            <th>时间</th><th>设备 IP</th><th>类型</th><th>源 IP</th><th>源端口</th>
+            <th>目的 IP</th><th>归属</th><th>目的端口</th><th>协议</th><th>转换后 IP</th><th>转换后端口</th><th>来源文件</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>2026-04-28 00:00:23</td><td>10.10.10.1</td><td>NAT日志</td><td>2.55.81.106</td><td>1799</td><td>140.205.70.178</td><td>杭州</td><td>443</td><td>6</td><td>58.216.48.6</td><td>1799</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td></tr>
+            <tr><td>2026-04-28 00:00:24</td><td>10.10.10.1</td><td>NAT日志</td><td>1.1.1.1</td><td>80</td><td>2.2.2.2</td><td>未知</td><td>443</td><td>6</td><td>3.3.3.3</td><td>80</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td></tr>
+            <tr><td>2026-04-28 00:00:25</td><td>10.10.10.1</td><td>NAT日志</td><td>4.4.4.4</td><td>443</td><td>5.5.5.5</td><td>未知</td><td>80</td><td>17</td><td>6.6.6.6</td><td>443</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td></tr>
+            <tr><td>2026-04-28 00:01:02</td><td>10.10.10.1</td><td>NAT日志</td><td>2.55.81.106</td><td>2048</td><td>140.205.70.178</td><td>杭州</td><td>443</td><td>6</td><td>58.216.48.6</td><td>2048</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td></tr>
+            <tr><td>2026-04-28 00:01:15</td><td>10.10.10.1</td><td>NAT日志</td><td>2.55.81.106</td><td>3022</td><td>140.205.70.178</td><td>杭州</td><td>443</td><td>6</td><td>58.216.48.6</td><td>3022</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td></tr>
+            <tr><td>2026-04-28 00:02:08</td><td>10.10.10.1</td><td>NAT日志</td><td>1.1.1.1</td><td>8080</td><td>2.2.2.2</td><td>未知</td><td>443</td><td>6</td><td>3.3.3.3</td><td>8080</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td></tr>
+            <tr><td>2026-04-28 00:03:45</td><td>10.10.10.1</td><td>NAT日志</td><td>4.4.4.4</td><td>443</td><td>5.5.5.5</td><td>未知</td><td>80</td><td>17</td><td>6.6.6.6</td><td>443</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td></tr>
+          </tbody>
+        </table>
+        <div class="pagination">
+          <button>上一页</button>
+          <button>1</button>
+          <button>2</button>
+          <button>3</button>
+          <button>下一页</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ===== Tasks Page ===== -->
+<div id="page-tasks" class="page">
+  <nav class="navbar">
+    <a href="#" class="brand">zlog</a>
+    <div class="nav-links">
+      <a href="#">查询</a><a href="#">任务</a><a href="#">IP 段</a><a href="#">设置</a><a href="#">退出</a>
+    </div>
+  </nav>
+  <main class="container">
+    <div class="tasks-page">
+      <h1>任务中心</h1>
+      <div class="actions">
+        <button class="btn">触发导入</button>
+      </div>
+      <table class="log-table">
+        <thead><tr>
+          <th>ID</th><th>类型</th><th>状态</th><th>进度</th><th>来源</th><th>创建时间</th><th>错误</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>job-a1b2c3</td><td>import</td><td><span class="badge badge-ok">ok</span></td><td>3/3</td><td>10.10.10.1_2026-04-28.log-20260429.gz</td><td>2026-04-28 12:00:00</td><td></td></tr>
+          <tr><td>job-d4e5f6</td><td>export</td><td><span class="badge badge-run">running</span></td><td>120/500</td><td>query: dst=140.205.70.178</td><td>2026-04-28 12:05:00</td><td></td></tr>
+          <tr><td>job-g7h8i9</td><td>export</td><td><span class="badge badge-ok">ok</span></td><td>500/500</td><td>query: src=2.55.81.106</td><td>2026-04-28 11:30:00</td><td></td></tr>
+          <tr><td>job-j0k1l2</td><td>import</td><td><span class="badge badge-fail">failed</span></td><td>0/0</td><td>bad-file.log</td><td>2026-04-28 10:00:00</td><td>文件格式错误</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- ===== IP Ranges Page ===== -->
+<div id="page-ip-ranges" class="page">
+  <nav class="navbar">
+    <a href="#" class="brand">zlog</a>
+    <div class="nav-links">
+      <a href="#">查询</a><a href="#">任务</a><a href="#">IP 段</a><a href="#">设置</a><a href="#">退出</a>
+    </div>
+  </nav>
+  <main class="container">
+    <div class="ip-ranges-page">
+      <h1>自定义 IP 段</h1>
+      <p style="color:var(--muted);margin-bottom:16px">自定义 CIDR 优先于内置归属库。</p>
+      <form onsubmit="return false">
+        <label>CIDR <input type="text" placeholder="如 58.216.48.0/24"></label>
+        <label>名称 <input type="text" placeholder="如 出口公网IP"></label>
+        <label>国家 <input type="text"></label>
+        <button type="button">添加</button>
+      </form>
+      <table class="log-table">
+        <thead><tr>
+          <th>CIDR</th><th>名称</th><th>国家</th><th>操作</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>58.216.48.0/24</td><td>出口公网IP</td><td>自定义</td><td><button style="padding:2px 10px;background:var(--danger)">删除</button></td></tr>
+          <tr><td>10.0.0.0/8</td><td>内网</td><td>内网</td><td><button style="padding:2px 10px;background:var(--danger)">删除</button></td></tr>
+          <tr><td>192.168.0.0/16</td><td>内网</td><td>内网</td><td><button style="padding:2px 10px;background:var(--danger)">删除</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- ===== Settings Page ===== -->
+<div id="page-settings" class="page">
+  <nav class="navbar">
+    <a href="#" class="brand">zlog</a>
+    <div class="nav-links">
+      <a href="#">查询</a><a href="#">任务</a><a href="#">IP 段</a><a href="#">设置</a><a href="#">退出</a>
+    </div>
+  </nav>
+  <main class="container">
+    <div class="settings-page">
+      <h1>设置</h1>
+      <form onsubmit="return false">
+        <label>扫描间隔（秒） <input type="number" value="300"></label>
+        <label>批量大小 <input type="number" value="5000"></label>
+        <label>导出保留天数 <input type="number" value="7"></label>
+        <button type="button">保存</button>
+      </form>
+      <div class="admin-section">
+        <h2 style="margin-bottom:16px">修改密码</h2>
+        <form onsubmit="return false">
+          <label>新密码 <input type="password" value=""></label>
+          <button type="button">更新</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.preview-tabs button').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>

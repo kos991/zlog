@@ -3,7 +3,7 @@ name: build-deb
 on:
   push:
     branches:
-      - main
+      - master
     tags:
       - "v*"
   pull_request:
@@ -46,6 +46,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends dpkg-dev git ${{ matrix.apt }}
+
+      - name: Tidy modules
+        run: go mod tidy
 
       - name: Run all unit tests
         run: go test ./internal/... -count=1 -v

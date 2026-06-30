@@ -1,6 +1,7 @@
 package importer
 
 import (
+	"compress/gzip"
 	"context"
 	"os"
 	"path/filepath"
