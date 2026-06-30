@@ -1,18 +1,24 @@
 {{define "content"}}
 <div class="settings-page">
-    <h1>设置</h1>
-    <form id="settings-form">
-        <label>扫描间隔（秒） <input type="number" name="scan_interval" value="300"></label>
-        <label>批量大小 <input type="number" name="batch_size" value="5000"></label>
-        <label>导出保留天数 <input type="number" name="retention_days" value="7"></label>
-        <button type="submit">保存</button>
-    </form>
-    <div class="admin-section">
-        <h2>修改密码</h2>
-        <form id="password-form">
-            <label>新密码 <input type="password" name="password" required></label>
-            <button type="submit">更新</button>
-        </form>
+    <div class="page-header">
+        <h1>设置</h1>
+    </div>
+    <div class="panel">
+        <div class="panel-body">
+            <form id="settings-form" class="settings-form">
+                <label><span>扫描间隔（秒）</span><input type="number" name="scan_interval" value="300"></label>
+                <label><span>批量大小</span><input type="number" name="batch_size" value="5000"></label>
+                <label><span>导出保留天数</span><input type="number" name="retention_days" value="7"></label>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </form>
+            <div class="admin-section">
+                <h2>修改密码</h2>
+                <form id="password-form">
+                    <label><span>新密码</span><input type="password" name="password" required></label>
+                    <button type="submit" class="btn btn-primary">更新</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {{end}}

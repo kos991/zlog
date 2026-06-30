@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"os"
 
 	"sangfor-log-search/internal/auth"
 )
@@ -10,9 +11,20 @@ func NewRouter(deps Deps) http.Handler {
 	mux := http.NewServeMux()
 	h := NewHandlers(deps)
 
-	mux.HandleFunc("/health", h.Health)
-	mux.HandleFunc("/login", h.Login)
+	// Static files
+	staticDir := "web/static"
+	if envDir := os.Getenv("ZLOG_STATIC_DIR"); envDir != "" {
+		staticDir = envDir
+	}
+	if _, err := os.Stat(staticDir); err == nil {
+		mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
+	}
+
+	// Login: GET renders page, POST authenticates
+	mux.HandleFunc("/login", h.LoginPage)
 	mux.HandleFunc("/logout", h.Logout)
+
+	mux.HandleFunc("/health", h.Health)
 
 	mux.HandleFunc("/api/logs", deps.Sessions.RequireAuth(h.QueryAPI))
 	mux.HandleFunc("/api/import", deps.Sessions.RequireAuth(h.ImportAPI))
@@ -34,21 +46,36 @@ func dashboardHandler(deps Deps) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		pageHandler("dashboard")(w, r)
+		pageHandlerWith("dashboard", map[string]any{
+			"Page": "dashboard",
+			"Title": "查询 — zlog",
+		})(w, r)
 	}
 }
 
 func pageHandler(name string) http.HandlerFunc {
+	return pageHandlerWith(name, map[string]any{
+		"Page": name,
+	})
+}
+
+func pageHandlerWith(name string, extra map[string]any) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tmpl := loadTemplate(name)
 		if tmpl == nil {
 			http.Error(w, "template not found", http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		tmpl.Execute(w, map[string]any{
+		data := map[string]any{
 			"Username": getUsername(r),
-		})
+			"Page":     name,
+			"Title":    "zlog",
+		}
+		for k, v := range extra {
+			data[k] = v
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		tmpl.Execute(w, data)
 	}
 }
 

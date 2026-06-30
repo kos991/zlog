@@ -1,62 +1,85 @@
 {{define "content"}}
 <div class="dashboard">
-    <h1>NAT 日志查询</h1>
+    <div class="page-header">
+        <h1>NAT 日志查询</h1>
+        <div class="header-actions">
+            <button type="button" id="export-btn" class="btn btn-secondary btn-sm">导出 CSV</button>
+        </div>
+    </div>
+
     <form id="query-form" class="query-form">
-        <div class="form-row">
-            <label>开始时间 <input type="text" name="start" placeholder="2026-04-28 或 2026-04-28 00:00:00" required></label>
-            <label>结束时间 <input type="text" name="end" placeholder="2026-04-28 或 2026-04-28 23:59:59" required></label>
+        <div class="form-section">
+            <div class="section-label">时间范围 <span class="tag tag-req">必填</span></div>
+            <div class="quick-dates">
+                <button type="button" data-range="today">今天</button>
+                <button type="button" data-range="yesterday">昨天</button>
+                <button type="button" data-range="7d">近 7 天</button>
+                <button type="button" data-range="30d">近 30 天</button>
+            </div>
+            <div class="form-row">
+                <label><span>开始日期</span><input type="date" name="start" required></label>
+                <label><span>结束日期</span><input type="date" name="end" required></label>
+            </div>
         </div>
-        <div class="form-row">
-            <label>IP <input type="text" name="ip" placeholder="如 140.205.70.178"></label>
-            <label>IP 字段
-                <select name="field">
-                    <option value="dst">目的 IP</option>
-                    <option value="src">源 IP</option>
-                    <option value="tr">转换后 IP</option>
-                    <option value="any">全部</option>
-                </select>
-            </label>
-            <label>设备 IP <input type="text" name="device" placeholder="如 10.10.10.1"></label>
+
+        <div class="form-section">
+            <div class="section-label">筛选条件 <span class="tag tag-opt">可选</span></div>
+            <div class="form-row">
+                <label class="ip-field"><span>IP 地址</span>
+                    <div class="ip-input-group">
+                        <input type="text" name="ip" placeholder="如 140.205.70.178">
+                        <select name="field">
+                            <option value="dst">目的 IP</option>
+                            <option value="src">源 IP</option>
+                            <option value="tr">转换后 IP</option>
+                            <option value="any">全部</option>
+                        </select>
+                    </div>
+                </label>
+                <label><span>设备 IP</span><input type="text" name="device" placeholder="如 10.10.10.1"></label>
+                <label><span>NAT 类型</span>
+                    <select name="nat_type">
+                        <option value="">全部</option>
+                        <option value="snat">SNAT</option>
+                        <option value="dnat">DNAT</option>
+                    </select>
+                </label>
+            </div>
         </div>
-        <div class="form-row">
-            <label>NAT 类型
-                <select name="nat_type">
-                    <option value="">全部</option>
-                    <option value="snat">snat</option>
-                    <option value="dnat">dnat</option>
-                </select>
-            </label>
-            <label>协议 <input type="text" name="protocol" placeholder="如 6"></label>
-            <label>文件名片段 <input type="text" name="file" placeholder="如 20260428"></label>
-            <label>关键字 <input type="text" name="keyword"></label>
-        </div>
+
         <div class="form-actions">
-            <button type="submit">查询</button>
-            <button type="button" id="export-btn">导出</button>
+            <button type="submit" class="btn btn-primary">查询</button>
+            <button type="reset" class="btn btn-ghost">重置</button>
         </div>
     </form>
+
     <div id="query-result" class="query-result">
-        <table class="log-table">
-            <thead>
-                <tr>
-                    <th>时间</th>
-                    <th>设备 IP</th>
-                    <th>类型</th>
-                    <th>源 IP</th>
-                    <th>源端口</th>
-                    <th>目的 IP</th>
-                    <th>归属</th>
-                    <th>目的端口</th>
-                    <th>协议</th>
-                    <th>转换后 IP</th>
-                    <th>转换后端口</th>
-                    <th>来源文件</th>
-                </tr>
-            </thead>
-            <tbody id="result-tbody">
-                <tr><td colspan="12" class="placeholder">请输入查询条件</td></tr>
-            </tbody>
-        </table>
+        <div id="result-bar" class="result-bar" style="display:none">
+            <span id="result-info" class="result-info"></span>
+            <span id="result-spinner" class="result-spinner" style="display:none">查询中</span>
+        </div>
+        <div class="table-wrap">
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>设备 IP</th>
+                        <th>源 IP</th>
+                        <th>源端口</th>
+                        <th>目的 IP</th>
+                        <th>归属</th>
+                        <th>目的端口</th>
+                        <th>协议</th>
+                        <th>转换后 IP</th>
+                        <th>转换后端口</th>
+                        <th>来源文件</th>
+                    </tr>
+                </thead>
+                <tbody id="result-tbody">
+                    <tr class="placeholder-row"><td colspan="11">输入查询条件后点击查询</td></tr>
+                </tbody>
+            </table>
+        </div>
         <div id="pagination" class="pagination"></div>
     </div>
 </div>

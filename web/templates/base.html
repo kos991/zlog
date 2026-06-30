@@ -8,12 +8,15 @@
 </head>
 <body>
     <nav class="navbar">
-        <a href="/" class="brand">zlog</a>
+        <a href="/" class="brand">
+            <span class="brand-mark">Z</span>
+            zlog
+        </a>
         <div class="nav-links">
-            <a href="/">查询</a>
-            <a href="/tasks">任务</a>
-            <a href="/ip-ranges">IP 段</a>
-            <a href="/settings">设置</a>
+            <a href="/" class="{{if eq .Page "dashboard"}}active{{end}}">查询</a>
+            <a href="/tasks" class="{{if eq .Page "tasks"}}active{{end}}">任务</a>
+            <a href="/ip-ranges" class="{{if eq .Page "ip_ranges"}}active{{end}}">IP 段</a>
+            <a href="/settings" class="{{if eq .Page "settings"}}active{{end}}">设置</a>
             <a href="/logout">退出</a>
         </div>
     </nav>
