@@ -1,0 +1,25 @@
+{{define "content"}}
+<div class="ip-ranges-page">
+    <h1>自定义 IP 段</h1>
+    <p>自定义 CIDR 优先于内置归属库。</p>
+    <form id="ip-range-form">
+        <label>CIDR <input type="text" name="cidr" placeholder="如 58.216.48.0/24" required></label>
+        <label>名称 <input type="text" name="name" placeholder="如 出口公网IP" required></label>
+        <label>国家 <input type="text" name="country"></label>
+        <button type="submit">添加</button>
+    </form>
+    <table class="log-table">
+        <thead>
+            <tr>
+                <th>CIDR</th>
+                <th>名称</th>
+                <th>国家</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="ranges-tbody">
+            <tr><td colspan="4" class="placeholder">加载中...</td></tr>
+        </tbody>
+    </table>
+</div>
+{{end}}

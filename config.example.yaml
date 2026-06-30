@@ -1,0 +1,32 @@
+server:
+  listen: "0.0.0.0:8080"
+  session_secret: "change-me-in-production"
+
+auth:
+  admin_username: "admin"
+  admin_password_hash: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
+
+paths:
+  clickhouse_url: "http://clickhouse:8123"
+  export_dir: "/var/lib/zlog/exports"
+  app_log: "/var/log/zlog/zlog.log"
+  log_dir: "/data/sangfor_fw_log"
+
+import:
+  scan_interval_seconds: 300
+  batch_size: 5000
+
+query:
+  require_time_range: true
+  max_range_days: 365
+  default_page_size: 100
+  max_page_size: 500
+
+storage:
+  compression: "zstd3"
+  partition_granularity: "month"
+  order_by: "log_date,dst_ip,ts"
+
+export:
+  max_rows: 1000000
+  retention_days: 7

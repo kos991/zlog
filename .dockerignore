@@ -1,0 +1,8 @@
+.git
+.github
+data
+dist
+*.deb
+docs/
+scripts/build-deb.sh
+scripts/build-kylin-package.sh

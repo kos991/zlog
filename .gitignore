@@ -1,0 +1,26 @@
+# 日志样本文件
+*.gz
+
+# 构建产物
+dist/
+*.deb
+zlog
+bin/
+
+# 数据目录
+data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 环境文件
+.env
+*.local
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
