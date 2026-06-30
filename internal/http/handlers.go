@@ -124,13 +124,6 @@ func (h *Handlers) buildFilter(r *http.Request) (query.LogFilter, error) {
 		return query.LogFilter{}, err
 	}
 
-	pageSize := h.deps.Cfg.Query.DefaultPageSize
-	if ps := r.URL.Query().Get("page_size"); ps != "" {
-		if v, err := strconv.Atoi(ps); err == nil && v > 0 && v <= h.deps.Cfg.Query.MaxPageSize {
-			pageSize = v
-		}
-	}
-
 	return query.LogFilter{
 		Start:    start,
 		End:      end,
