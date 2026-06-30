@@ -48,7 +48,22 @@ jobs:
           path: /tmp/test-output.log
 
       - name: Build zlog binary
-        run: go build -o /tmp/zlog ./cmd/zlog
+        run: go build -o /tmp/zlog ./cmd/zlog 2>&1 | tee /tmp/build-output.log; exit ${PIPESTATUS[0]}
+
+      - name: Dump build output to summary on failure
+        if: failure()
+        run: |
+          echo "## Build Output" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/build-output.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: /tmp/build-output.log
 
       - name: Verify docker compose config
         run: docker compose config >/dev/null
