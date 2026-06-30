@@ -171,6 +171,10 @@ func parseTimestamp(tsStr string, logDate time.Time) (time.Time, error) {
 	if tsStr == "" {
 		return logDate, nil
 	}
+	parts := strings.Fields(tsStr)
+	if len(parts) >= 3 {
+		tsStr = parts[0] + " " + parts[1] + " " + parts[2]
+	}
 	for _, layout := range []string{"Jan 2 15:04:05", "2006-01-02 15:04:05"} {
 		if t, err := time.ParseInLocation(layout, tsStr, time.Local); err == nil {
 			return t.AddDate(logDate.Year(), 0, 0), nil

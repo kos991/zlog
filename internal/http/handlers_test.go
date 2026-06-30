@@ -11,6 +11,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+var noRedirectClient = &http.Client{
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+}
+
 func testServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	hash, _ := bcrypt.GenerateFromPassword([]byte("change-me"), bcrypt.DefaultCost)
@@ -28,7 +34,7 @@ func testServer(t *testing.T) *httptest.Server {
 
 func postForm(t *testing.T, url string, vals url.Values) *http.Response {
 	t.Helper()
-	resp, err := http.PostForm(url, vals)
+	resp, err := noRedirectClient.PostForm(url, vals)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +82,7 @@ func TestUnauthenticatedRequestRedirects(t *testing.T) {
 	srv := testServer(t)
 	defer srv.Close()
 
-	resp, err := http.Get(srv.URL + "/")
+	resp, err := noRedirectClient.Get(srv.URL + "/")
 	if err != nil {
 		t.Fatal(err)
 	}
