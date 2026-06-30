@@ -23,8 +23,11 @@ jobs:
         with:
           go-version: "1.22.x"
           cache: true
+          cache-dependency-path: go.mod
 
       - name: Tidy modules
+        env:
+          CGO_ENABLED: 0
         run: go mod tidy
 
       - name: Run all unit tests

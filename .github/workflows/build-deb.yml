@@ -41,6 +41,7 @@ jobs:
         with:
           go-version: "1.22.x"
           cache: true
+          cache-dependency-path: go.mod
 
       - name: Install build tools
         run: |
@@ -48,6 +49,8 @@ jobs:
           sudo apt-get install -y --no-install-recommends dpkg-dev git ${{ matrix.apt }}
 
       - name: Tidy modules
+        env:
+          CGO_ENABLED: 0
         run: go mod tidy
 
       - name: Run all unit tests
