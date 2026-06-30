@@ -33,7 +33,14 @@ jobs:
       - name: Run all unit tests
         env:
           CGO_ENABLED: 0
-        run: go test ./internal/... -count=1 -v
+        run: go test ./internal/... -count=1 -v 2>&1 | tee /tmp/test-output.log; exit ${PIPESTATUS[0]}
+
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-output
+          path: /tmp/test-output.log
 
       - name: Build zlog binary
         env:
