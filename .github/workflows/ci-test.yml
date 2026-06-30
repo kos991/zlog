@@ -33,7 +33,9 @@ jobs:
       - name: Run all unit tests
         env:
           CGO_ENABLED: 0
-        run: go test ./internal/... -count=1 -v
+        run: |
+          set -o pipefail
+          go test ./internal/... -count=1 -v 2>&1 | tee /tmp/test-output.txt
 
       - name: Build zlog binary
         env:
