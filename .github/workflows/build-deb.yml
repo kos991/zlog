@@ -21,6 +21,9 @@ jobs:
   build:
     name: build ${{ matrix.goarch }} deb
     runs-on: ubuntu-22.04
+    env:
+      CGO_ENABLED: 0
+      GOFLAGS: -mod=mod
     strategy:
       fail-fast: false
       matrix:
@@ -40,22 +43,14 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.22.x"
-          cache: true
-          cache-dependency-path: go.mod
+          cache: false
 
       - name: Install build tools
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends dpkg-dev git ${{ matrix.apt }}
 
-      - name: Tidy modules
-        env:
-          CGO_ENABLED: 0
-        run: go mod tidy
-
       - name: Run all unit tests
-        env:
-          CGO_ENABLED: 0
         run: go test ./internal/... -count=1 -v
 
       - name: Build deb
@@ -65,7 +60,7 @@ jobs:
           VERSION: ${{ github.event.inputs.version || github.ref_name }}
         run: |
           VERSION="${VERSION#v}"
-          if [ -z "${VERSION}" ] || [ "${VERSION}" = "main" ]; then
+          if [ -z "${VERSION}" ] || [ "${VERSION}" = "master" ]; then
             VERSION="0.1.0"
           fi
           VERSION="${VERSION}" bash scripts/build-deb.sh
@@ -77,4 +72,3 @@ jobs:
           path: dist/*.deb
           if-no-files-found: error
           retention-days: 30
-
