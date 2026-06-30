@@ -35,7 +35,7 @@ jobs:
           CGO_ENABLED: 0
         run: |
           set -o pipefail
-          go test ./internal/... -count=1 -v 2>&1 | tee /tmp/test-output.txt
+          go test -mod=mod ./internal/... -count=1 -v 2>&1 | tee /tmp/test-output.txt
 
       - name: Build zlog binary
         env:
