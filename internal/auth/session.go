@@ -52,7 +52,7 @@ func (m *SessionManager) AuthenticatedUser(r *http.Request) (string, bool) {
 	return username, true
 }
 
-func sha256(data []byte) []byte {
+func sha256digest(data []byte) []byte {
 	sum := sha256.Sum256(data)
 	return sum[:]
 }

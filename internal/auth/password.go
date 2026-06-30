@@ -81,5 +81,5 @@ func simpleHMAC(key []byte, data string) string {
 }
 
 func sha256sum(data []byte) string {
-	return hexEncode(sha256(data))
+	return hexEncode(sha256digest(data))
 }

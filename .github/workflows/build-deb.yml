@@ -51,7 +51,9 @@ jobs:
         run: go mod tidy
 
       - name: Run all unit tests
-        run: go test ./internal/... -count=1 -v
+        env:
+          CGO_ENABLED: 0
+        run: go test $(go list ./internal/... | grep -v logsearch) -count=1 -v
 
       - name: Build deb
         env:

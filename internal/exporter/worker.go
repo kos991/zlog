@@ -2,11 +2,9 @@ package exporter
 
 import (
 	"context"
-	"encoding/csv"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 

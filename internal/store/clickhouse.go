@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -16,8 +18,8 @@ type ClickHouseStore struct {
 	conn driver.Conn
 }
 
-func Open(ctx context.Context, url string) (*ClickHouseStore, error) {
-	opts, err := clickhouse.ParseURL(url)
+func Open(ctx context.Context, addr string) (*ClickHouseStore, error) {
+	opts, err := parseClickhouseURL(addr)
 	if err != nil {
 		return nil, fmt.Errorf("parse clickhouse url: %w", err)
 	}
@@ -29,6 +31,39 @@ func Open(ctx context.Context, url string) (*ClickHouseStore, error) {
 		return nil, fmt.Errorf("ping clickhouse: %w", err)
 	}
 	return &ClickHouseStore{conn: conn}, nil
+}
+
+func parseClickhouseURL(raw string) (*clickhouse.Options, error) {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return nil, err
+	}
+	host := u.Hostname()
+	if host == "" {
+		host = "localhost"
+	}
+	port := 8123
+	if p := u.Port(); p != "" {
+		if v, err := strconv.Atoi(p); err == nil {
+			port = v
+		}
+	}
+	protocol := clickhouse.HTTP
+	if u.Scheme == "native" || port == 9000 {
+		protocol = clickhouse.Native
+	}
+	return &clickhouse.Options{
+		Protocol: protocol,
+		Addr:     []string{fmt.Sprintf("%s:%d", host, port)},
+		Auth: clickhouse.Auth{
+			Database: u.Path[1:],
+			Username: u.User.Username(),
+			Password: func() string {
+				p, _ := u.User.Password()
+				return p
+			}(),
+		},
+	}, nil
 }
 
 func (s *ClickHouseStore) Close() error {
