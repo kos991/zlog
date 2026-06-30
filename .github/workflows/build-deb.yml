@@ -56,7 +56,7 @@ jobs:
       - name: Run all unit tests
         env:
           CGO_ENABLED: 0
-        run: go test -mod=mod ./internal/... -count=1 -v
+        run: go test ./internal/... -count=1 -v
 
       - name: Build deb
         env:
