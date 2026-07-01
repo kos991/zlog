@@ -47,7 +47,7 @@ func (a *App) Run(ctx context.Context) error {
 		return fmt.Errorf("create export dir: %w", err)
 	}
 
-	chStore, err := store.Open(ctx, a.cfg.Paths.ClickHouseURL)
+	chStore, err := a.openClickHouseWithRetry(ctx)
 	if err != nil {
 		return fmt.Errorf("open clickhouse: %w", err)
 	}
@@ -107,6 +107,23 @@ func (a *App) Run(ctx context.Context) error {
 	}
 	a.logger.Printf("zlog stopped")
 	return nil
+}
+
+func (a *App) openClickHouseWithRetry(ctx context.Context) (*store.ClickHouseStore, error) {
+	maxRetries := 10
+	for i := 0; i < maxRetries; i++ {
+		s, err := store.Open(ctx, a.cfg.Paths.ClickHouseURL)
+		if err == nil {
+			return s, nil
+		}
+		a.logger.Printf("clickhouse connect attempt %d/%d failed: %v", i+1, maxRetries, err)
+		select {
+		case <-time.After(3 * time.Second):
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	}
+	return nil, fmt.Errorf("clickhouse not ready after %d attempts", maxRetries)
 }
 
 func (a *App) buildResolver() (*ipmeta.Resolver, error) {
