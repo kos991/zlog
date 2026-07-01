@@ -4,7 +4,7 @@
 # 构建产物
 dist/
 *.deb
-zlog
+/zlog
 bin/
 
 # 数据目录
