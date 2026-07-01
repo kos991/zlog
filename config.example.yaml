@@ -7,7 +7,7 @@ auth:
   admin_password_hash: "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
 
 paths:
-  clickhouse_url: "http://clickhouse:8123"
+  clickhouse_url: "clickhouse://clickhouse:9000"
   export_dir: "/var/lib/zlog/exports"
   app_log: "/var/log/zlog/zlog.log"
   log_dir: "/data/sangfor_fw_log"

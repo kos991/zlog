@@ -43,15 +43,15 @@ func parseClickhouseURL(raw string) (*clickhouse.Options, error) {
 	if host == "" {
 		host = "localhost"
 	}
-	port := 8123
+	port := 9000
 	if p := u.Port(); p != "" {
 		if v, err := strconv.Atoi(p); err == nil {
 			port = v
 		}
 	}
-	protocol := clickhouse.HTTP
-	if u.Scheme == "native" || port == 9000 {
-		protocol = clickhouse.Native
+	protocol := clickhouse.Native
+	if u.Scheme == "http" || port == 8123 {
+		protocol = clickhouse.HTTP
 	}
 	return &clickhouse.Options{
 		Protocol: protocol,
