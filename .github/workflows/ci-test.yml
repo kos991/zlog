@@ -88,7 +88,15 @@ jobs:
           sleep 30
 
       - name: Run smoke test
-        run: bash scripts/smoke.sh
+        run: bash scripts/smoke.sh 2>&1 | tee /tmp/smoke.log; exit ${PIPESTATUS[0]}
+
+      - name: Upload smoke log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-output
+          path: |
+            /tmp/smoke.log
 
       - name: Show logs on failure
         if: failure()
