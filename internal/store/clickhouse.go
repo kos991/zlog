@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -56,7 +57,7 @@ func parseClickhouseURL(raw string) (*clickhouse.Options, error) {
 		Protocol: protocol,
 		Addr:     []string{fmt.Sprintf("%s:%d", host, port)},
 		Auth: clickhouse.Auth{
-			Database: u.Path[1:],
+			Database: strings.TrimPrefix(u.Path, "/"),
 			Username: u.User.Username(),
 			Password: func() string {
 				p, _ := u.User.Password()
