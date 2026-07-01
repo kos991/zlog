@@ -7,8 +7,18 @@ set -euo pipefail
 base_url="${BASE_URL:-http://127.0.0.1:8080}"
 
 echo "==> Health check"
-curl -fsS "$base_url/health" | jq -e '.status == "ok"' >/dev/null
-echo "    OK"
+for i in $(seq 1 30); do
+  if curl -fsS "$base_url/health" 2>/dev/null | jq -e '.status == "ok"' >/dev/null 2>&1; then
+    echo "    OK (after ${i}s)"
+    break
+  fi
+  sleep 2
+  if [ $i -eq 30 ]; then
+    echo "    FAILED: service not ready after 60s"
+    docker compose logs zlog 2>/dev/null || true
+    exit 1
+  fi
+done
 
 echo "==> Login"
 login_cookie=$(mktemp)
